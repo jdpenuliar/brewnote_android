@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -43,14 +44,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     name = "home:getHomeStats",
                     args = emptyMap()
                 ).collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            _homeStats.value = it
-                        },
-                        onFailure = { _ ->
-                            // ignore
-                        }
-                    )
+                    withContext(Dispatchers.Main) {
+                        result.fold(
+                            onSuccess = {
+                                _homeStats.value = it
+                            },
+                            onFailure = { _ ->
+                                // ignore
+                            }
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 // ignore
@@ -65,15 +68,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     name = "brewNotes:getRecentBrewNotes",
                     args = mapOf("paginationOpts" to mapOf("numItems" to 5.0, "cursor" to null))
                 ).collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            _recentBrews.value = it.page
-                            _isLoading.value = false
-                        },
-                        onFailure = { _ ->
-                            _isLoading.value = false
-                        }
-                    )
+                    withContext(Dispatchers.Main) {
+                        result.fold(
+                            onSuccess = {
+                                _recentBrews.value = it.page
+                                _isLoading.value = false
+                            },
+                            onFailure = { _ ->
+                                _isLoading.value = false
+                            }
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _isLoading.value = false
@@ -88,14 +93,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     name = "beans:getRecentBeans",
                     args = mapOf("paginationOpts" to mapOf("numItems" to 5.0, "cursor" to null))
                 ).collect { result ->
-                    result.fold(
-                        onSuccess = {
-                            _recentBeans.value = it.page
-                        },
-                        onFailure = { _ ->
-                            // ignore
-                        }
-                    )
+                    withContext(Dispatchers.Main) {
+                        result.fold(
+                            onSuccess = {
+                                _recentBeans.value = it.page
+                            },
+                            onFailure = { _ ->
+                                // ignore
+                            }
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 // ignore

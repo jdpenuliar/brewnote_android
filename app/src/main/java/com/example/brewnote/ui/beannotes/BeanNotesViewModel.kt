@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface BeanNotesUiState {
     object Loading : BeanNotesUiState
@@ -77,10 +78,12 @@ class BeanNotesViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "beanNotes:getRecentBeanNotes",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _beanNotesState.value = BeanNotesUiState.Success(it.page) },
-                    onFailure = { _beanNotesState.value = BeanNotesUiState.Error(it.message ?: "Failed to load bean notes") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _beanNotesState.value = BeanNotesUiState.Success(it.page) },
+                        onFailure = { _beanNotesState.value = BeanNotesUiState.Error(it.message ?: "Failed to load bean notes") }
+                    )
+                }
             }
         }
     }
@@ -91,10 +94,12 @@ class BeanNotesViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "beans:getRecentBeans",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _availableBeans.value = it.page },
-                    onFailure = { /* silently ignore */ }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _availableBeans.value = it.page },
+                        onFailure = { /* silently ignore */ }
+                    )
+                }
             }
         }
     }
@@ -106,10 +111,12 @@ class BeanNotesViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "beanNotes:getBeanNoteById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = BeanNoteDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = BeanNoteDetailUiState.Error(it.message ?: "Failed to load bean note") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = BeanNoteDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = BeanNoteDetailUiState.Error(it.message ?: "Failed to load bean note") }
+                    )
+                }
             }
         }
     }
@@ -120,17 +127,19 @@ class BeanNotesViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "beanNotes:getBeanNoteById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { note ->
-                        _title.value = note.title
-                        _selectedBeanIds.value = note.beans.map { it._id }
-                        _personalRating.value = note.personalRating
-                        _tastingNotes.value = note.tastingNotes ?: ""
-                        _price.value = note.price?.toString() ?: ""
-                        _currency.value = note.currency ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { note ->
+                            _title.value = note.title
+                            _selectedBeanIds.value = note.beans.map { it._id }
+                            _personalRating.value = note.personalRating
+                            _tastingNotes.value = note.tastingNotes ?: ""
+                            _price.value = note.price?.toString() ?: ""
+                            _currency.value = note.currency ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -157,11 +166,15 @@ class BeanNotesViewModel(application: Application) : AndroidViewModel(applicatio
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface BeansUiState {
     object Loading : BeansUiState
@@ -67,10 +68,12 @@ class BeansViewModel(application: Application) : AndroidViewModel(application) {
                 name = "beans:getRecentBeans",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _beansState.value = BeansUiState.Success(it.page) },
-                    onFailure = { _beansState.value = BeansUiState.Error(it.message ?: "Failed to load beans") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _beansState.value = BeansUiState.Success(it.page) },
+                        onFailure = { _beansState.value = BeansUiState.Error(it.message ?: "Failed to load beans") }
+                    )
+                }
             }
         }
     }
@@ -82,10 +85,12 @@ class BeansViewModel(application: Application) : AndroidViewModel(application) {
                 name = "beans:getBeanById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = BeanDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = BeanDetailUiState.Error(it.message ?: "Failed to load bean") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = BeanDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = BeanDetailUiState.Error(it.message ?: "Failed to load bean") }
+                    )
+                }
             }
         }
     }
@@ -96,15 +101,17 @@ class BeansViewModel(application: Application) : AndroidViewModel(application) {
                 name = "beans:getBeanById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { bean ->
-                        _name.value = bean.name
-                        _countryOfOrigin.value = bean.countryOfOrigin
-                        _species.value = bean.species
-                        _openFoodFactsId.value = bean.openFoodFactsId ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { bean ->
+                            _name.value = bean.name
+                            _countryOfOrigin.value = bean.countryOfOrigin
+                            _species.value = bean.species
+                            _openFoodFactsId.value = bean.openFoodFactsId ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -129,11 +136,15 @@ class BeansViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }

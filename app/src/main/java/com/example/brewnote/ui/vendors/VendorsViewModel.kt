@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface VendorsUiState {
     object Loading : VendorsUiState
@@ -64,10 +65,12 @@ class VendorsViewModel(application: Application) : AndroidViewModel(application)
                 name = "vendors:getRecentVendors",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _vendorsState.value = VendorsUiState.Success(it.page) },
-                    onFailure = { _vendorsState.value = VendorsUiState.Error(it.message ?: "Failed to load vendors") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _vendorsState.value = VendorsUiState.Success(it.page) },
+                        onFailure = { _vendorsState.value = VendorsUiState.Error(it.message ?: "Failed to load vendors") }
+                    )
+                }
             }
         }
     }
@@ -79,10 +82,12 @@ class VendorsViewModel(application: Application) : AndroidViewModel(application)
                 name = "vendors:getVendorById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = VendorDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = VendorDetailUiState.Error(it.message ?: "Failed to load vendor") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = VendorDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = VendorDetailUiState.Error(it.message ?: "Failed to load vendor") }
+                    )
+                }
             }
         }
     }
@@ -93,14 +98,16 @@ class VendorsViewModel(application: Application) : AndroidViewModel(application)
                 name = "vendors:getVendorById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { vendor ->
-                        _name.value = vendor.name
-                        _type.value = vendor.type
-                        _url.value = vendor.url ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { vendor ->
+                            _name.value = vendor.name
+                            _type.value = vendor.type
+                            _url.value = vendor.url ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -124,11 +131,15 @@ class VendorsViewModel(application: Application) : AndroidViewModel(application)
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }

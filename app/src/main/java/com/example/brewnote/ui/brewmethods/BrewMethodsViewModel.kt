@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface BrewMethodsUiState {
     object Loading : BrewMethodsUiState
@@ -57,10 +58,12 @@ class BrewMethodsViewModel(application: Application) : AndroidViewModel(applicat
                 name = "brewMethods:getRecentBrewMethods",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _brewMethodsState.value = BrewMethodsUiState.Success(it.page) },
-                    onFailure = { _brewMethodsState.value = BrewMethodsUiState.Error(it.message ?: "Failed to load brew methods") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _brewMethodsState.value = BrewMethodsUiState.Success(it.page) },
+                        onFailure = { _brewMethodsState.value = BrewMethodsUiState.Error(it.message ?: "Failed to load brew methods") }
+                    )
+                }
             }
         }
     }
@@ -72,10 +75,12 @@ class BrewMethodsViewModel(application: Application) : AndroidViewModel(applicat
                 name = "brewMethods:getBrewMethodById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = BrewMethodDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = BrewMethodDetailUiState.Error(it.message ?: "Failed to load brew method") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = BrewMethodDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = BrewMethodDetailUiState.Error(it.message ?: "Failed to load brew method") }
+                    )
+                }
             }
         }
     }
@@ -86,13 +91,15 @@ class BrewMethodsViewModel(application: Application) : AndroidViewModel(applicat
                 name = "brewMethods:getBrewMethodById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { method ->
-                        _name.value = method.name
-                        _description.value = method.description ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { method ->
+                            _name.value = method.name
+                            _description.value = method.description ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -115,11 +122,15 @@ class BrewMethodsViewModel(application: Application) : AndroidViewModel(applicat
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }

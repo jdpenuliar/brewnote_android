@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Custom AuthProvider that passes "convex" JWT template to Clerk.
@@ -59,7 +60,7 @@ class ClerkConvexAuthProvider : AuthProvider<String> {
     }
 
     private suspend fun authenticate(onIdToken: (String?) -> Unit): Result<String> {
-        this.onIdToken = onIdToken
+        this@ClerkConvexAuthProvider.onIdToken = onIdToken
         return fetchToken()
     }
 

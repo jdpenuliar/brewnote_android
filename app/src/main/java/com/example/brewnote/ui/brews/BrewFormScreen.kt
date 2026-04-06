@@ -1,6 +1,7 @@
 package com.example.brewnote.ui.brews
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -53,6 +54,10 @@ private val QUICK_BREW_METHODS = listOf(
 
 private val ROAST_OPTIONS = listOf("LIGHT", "MEDIUM_LIGHT", "MEDIUM", "MEDIUM_DARK", "DARK")
 
+private val GRIND_SIZE_OPTIONS = listOf(
+    "EXTREMELY_FINE", "FINE", "MEDIUM_FINE", "MEDIUM", "MEDIUM_COARSE", "COARSE", "EXTREMELY_COARSE"
+)
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun BrewFormScreen(
@@ -73,6 +78,7 @@ fun BrewFormScreen(
     val availableBrewMethods by viewModel.availableBrewMethods.collectAsState()
     val rating by viewModel.rating.collectAsState()
     val grindSize by viewModel.grindSize.collectAsState()
+    val grindSizeEnum by viewModel.grindSizeEnum.collectAsState()
     val roast by viewModel.roast.collectAsState()
     val beansWeight by viewModel.beansWeight.collectAsState()
     val beansWeightType by viewModel.beansWeightType.collectAsState()
@@ -264,6 +270,16 @@ fun BrewFormScreen(
                 onRatingSelected = viewModel::setRating
             )
 
+            // Ratio
+            OutlinedTextField(
+                value = waterToGrindRatio,
+                onValueChange = viewModel::setWaterToGrindRatio,
+                label = { Text("Water to Grind Ratio (e.g. 15:1)") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = true
+            )
+
             // Grind Size
             SectionHeader(title = "Grind Size")
             Row(
@@ -271,29 +287,36 @@ fun BrewFormScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Fine", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("1", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Slider(
-                    value = (grindSize ?: 10).toFloat(),
-                    onValueChange = { viewModel.setGrindSize(it.toInt()) },
-                    valueRange = 1f..20f,
-                    steps = 18,
+                    value = (grindSize ?: 1.0).toFloat(),
+                    onValueChange = { viewModel.setGrindSize(it.toDouble()) },
+                    valueRange = 1f..500f,
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
                 )
-                Text("Coarse", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("500", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (grindSize != null) "Size: $grindSize" else "Not set",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                OutlinedTextField(
+                    value = grindSize?.toInt()?.toString() ?: "",
+                    onValueChange = {
+                        val newValue = it.toDoubleOrNull()
+                        if (newValue == null || newValue in 1.0..500.0) {
+                            viewModel.setGrindSize(newValue)
+                        }
+                    },
+                    label = { Text("Numeric Size (1-500)") },
+                    modifier = Modifier.width(180.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
                 )
                 if (grindSize != null) {
                     androidx.compose.material3.TextButton(onClick = { viewModel.setGrindSize(null) }) {
-                        Text("Clear")
+                        Text("Clear Numeric")
                     }
                 }
             }
@@ -394,16 +417,6 @@ fun BrewFormScreen(
                 singleLine = true
             )
 
-            // Ratio
-            OutlinedTextField(
-                value = waterToGrindRatio,
-                onValueChange = viewModel::setWaterToGrindRatio,
-                label = { Text("Water to Grind Ratio (e.g. 15:1)") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-
             // Notes
             OutlinedTextField(
                 value = notes,
@@ -414,7 +427,6 @@ fun BrewFormScreen(
                 minLines = 3,
                 maxLines = 6
             )
-
             formError?.let {
                 Text(
                     text = it,

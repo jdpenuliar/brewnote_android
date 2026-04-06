@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withContext
 
 sealed interface BrewsUiState {
     object Loading : BrewsUiState
@@ -65,6 +67,9 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
     private val _grindSize = MutableStateFlow<Double?>(null)
     val grindSize: StateFlow<Double?> = _grindSize.asStateFlow()
 
+    private val _grindSizeEnum = MutableStateFlow<String?>(null)
+    val grindSizeEnum: StateFlow<String?> = _grindSizeEnum.asStateFlow()
+
     private val _roast = MutableStateFlow<String?>(null)
     val roast: StateFlow<String?> = _roast.asStateFlow()
 
@@ -108,10 +113,12 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "brewNotes:getRecentBrewNotes",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _brewsState.value = BrewsUiState.Success(it.page) },
-                    onFailure = { _brewsState.value = BrewsUiState.Error(it.message ?: "Failed to load brews") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _brewsState.value = BrewsUiState.Success(it.page) },
+                        onFailure = { _brewsState.value = BrewsUiState.Error(it.message ?: "Failed to load brews") }
+                    )
+                }
             }
         }
     }
@@ -122,10 +129,12 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "beans:getRecentBeans",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _availableBeans.value = it.page },
-                    onFailure = { /* silently ignore */ }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _availableBeans.value = it.page },
+                        onFailure = { /* silently ignore */ }
+                    )
+                }
             }
         }
     }
@@ -136,10 +145,12 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "equipments:getRecentEquipments",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _availableEquipment.value = it.page },
-                    onFailure = { /* silently ignore */ }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _availableEquipment.value = it.page },
+                        onFailure = { /* silently ignore */ }
+                    )
+                }
             }
         }
     }
@@ -150,10 +161,12 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "brewMethods:getRecentBrewMethods",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _availableBrewMethods.value = it.page },
-                    onFailure = { /* silently ignore */ }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _availableBrewMethods.value = it.page },
+                        onFailure = { /* silently ignore */ }
+                    )
+                }
             }
         }
     }
@@ -165,10 +178,12 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "brewNotes:getBrewNoteById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = BrewDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = BrewDetailUiState.Error(it.message ?: "Failed to load brew") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = BrewDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = BrewDetailUiState.Error(it.message ?: "Failed to load brew") }
+                    )
+                }
             }
         }
     }
@@ -179,25 +194,28 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                 name = "brewNotes:getBrewNoteById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { brew ->
-                        _brewMethodId.value = brew.brewMethodId
-                        _brewMethodName.value = brew.brewMethodDoc?.name ?: ""
-                        _selectedBeanIds.value = brew.beans.map { it._id }
-                        _selectedEquipmentIds.value = brew.equipment.map { it._id }
-                        _rating.value = brew.rating
-                        _grindSize.value = brew.grindSize
-                        _roast.value = brew.roast
-                        _beansWeight.value = brew.beansWeight?.toString() ?: ""
-                        _beansWeightType.value = brew.beansWeightType ?: "GRAMS"
-                        _brewTemperature.value = brew.brewTemperature?.toString() ?: ""
-                        _brewTemperatureType.value = brew.brewTemperatureType ?: "CELSIUS"
-                        _brewTime.value = brew.brewTime?.toString() ?: ""
-                        _waterToGrindRatio.value = brew.waterToGrindRatio ?: ""
-                        _notes.value = brew.notes ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { brew ->
+                            _brewMethodId.value = brew.brewMethodId
+                            _brewMethodName.value = brew.brewMethodDoc?.name ?: ""
+                            _selectedBeanIds.value = brew.beans.map { it._id }
+                            _selectedEquipmentIds.value = brew.equipment.map { it._id }
+                            _rating.value = brew.rating
+                            _grindSize.value = brew.grindSize
+                            _grindSizeEnum.value = brew.grindSizeEnum
+                            _roast.value = brew.roast
+                            _beansWeight.value = brew.beansWeight?.toString() ?: ""
+                            _beansWeightType.value = brew.beansWeightType ?: "GRAMS"
+                            _brewTemperature.value = brew.brewTemperature?.toString() ?: ""
+                            _brewTemperatureType.value = brew.brewTemperatureType ?: "CELSIUS"
+                            _brewTime.value = brew.brewTime?.toString() ?: ""
+                            _waterToGrindRatio.value = brew.waterToGrindRatio ?: ""
+                            _notes.value = brew.notes ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -221,17 +239,21 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
                         if (_beansWeightType.value.isNotEmpty()) put("beansWeightType", _beansWeightType.value)
                         _brewTemperature.value.toDoubleOrNull()?.let { put("brewTemperature", it) }
                         if (_brewTemperatureType.value.isNotEmpty()) put("brewTemperatureType", _brewTemperatureType.value)
-                        _brewTime.value.toIntOrNull()?.let { put("brewTime", it) }
+                        _brewTime.value.toDoubleOrNull()?.let { put("brewTime", it) }
                         if (_waterToGrindRatio.value.isNotEmpty()) put("waterToGrindRatio", _waterToGrindRatio.value)
                         if (_notes.value.isNotEmpty()) put("notes", _notes.value)
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }
@@ -249,7 +271,8 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
     fun setBrewMethodId(id: String?) { _brewMethodId.value = id }
     fun setBrewMethodName(name: String) { _brewMethodName.value = name }
     fun setRating(r: Int) { _rating.value = r.toDouble() }
-    fun setGrindSize(g: Int?) { _grindSize.value = g?.toDouble() }
+    fun setGrindSize(g: Double?) { _grindSize.value = g }
+    fun setGrindSizeEnum(e: String?) { _grindSizeEnum.value = e }
     fun setRoast(r: String?) { _roast.value = r }
     fun setBeansWeight(w: String) { _beansWeight.value = w }
     fun setBeansWeightType(t: String) { _beansWeightType.value = t }

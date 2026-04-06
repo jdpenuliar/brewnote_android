@@ -9,6 +9,7 @@ data class BrewNote(
     val brewMethodId: String? = null,
     val notes: String? = null,
     val grindSize: Double? = null,
+    val grindSizeEnum: String? = null,
     val roast: String? = null,
     val roastDate: Double? = null,
     val beansWeight: Double? = null,

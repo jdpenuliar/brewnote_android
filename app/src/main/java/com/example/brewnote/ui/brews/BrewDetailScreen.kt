@@ -107,8 +107,8 @@ fun BrewDetailScreen(
                         DetailRow(label = "Brew Method", value = it.name)
                     }
 
-                    doc.grindSize?.let {
-                        DetailRow(label = "Grind Size", value = it.toString())
+                    if (doc.grindSize != null) {
+                        DetailRow(label = "Grind Size", value = doc.grindSize.toInt().toString())
                     }
 
                     doc.roast?.let {

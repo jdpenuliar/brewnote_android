@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 sealed interface EquipmentUiState {
     object Loading : EquipmentUiState
@@ -57,10 +58,12 @@ class EquipmentViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "equipments:getRecentEquipments",
                 args = mapOf("paginationOpts" to mapOf("numItems" to 50.0, "cursor" to null))
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _equipmentState.value = EquipmentUiState.Success(it.page) },
-                    onFailure = { _equipmentState.value = EquipmentUiState.Error(it.message ?: "Failed to load equipment") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _equipmentState.value = EquipmentUiState.Success(it.page) },
+                        onFailure = { _equipmentState.value = EquipmentUiState.Error(it.message ?: "Failed to load equipment") }
+                    )
+                }
             }
         }
     }
@@ -72,10 +75,12 @@ class EquipmentViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "equipments:getEquipmentById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { _detailState.value = EquipmentDetailUiState.Success(it) },
-                    onFailure = { _detailState.value = EquipmentDetailUiState.Error(it.message ?: "Failed to load equipment") }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { _detailState.value = EquipmentDetailUiState.Success(it) },
+                        onFailure = { _detailState.value = EquipmentDetailUiState.Error(it.message ?: "Failed to load equipment") }
+                    )
+                }
             }
         }
     }
@@ -86,13 +91,15 @@ class EquipmentViewModel(application: Application) : AndroidViewModel(applicatio
                 name = "equipments:getEquipmentById",
                 args = mapOf("id" to id)
             ).collect { result ->
-                result.fold(
-                    onSuccess = { equip ->
-                        _name.value = equip.name
-                        _brand.value = equip.brand ?: ""
-                    },
-                    onFailure = { _formError.value = it.message }
-                )
+                withContext(Dispatchers.Main) {
+                    result.fold(
+                        onSuccess = { equip ->
+                            _name.value = equip.name
+                            _brand.value = equip.brand ?: ""
+                        },
+                        onFailure = { _formError.value = it.message }
+                    )
+                }
             }
         }
     }
@@ -115,11 +122,15 @@ class EquipmentViewModel(application: Application) : AndroidViewModel(applicatio
                     }
                 )
             }.onSuccess {
-                _isSubmitting.value = false
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    onSuccess()
+                }
             }.onFailure {
-                _isSubmitting.value = false
-                _formError.value = it.message
+                withContext(Dispatchers.Main) {
+                    _isSubmitting.value = false
+                    _formError.value = it.message
+                }
             }
         }
     }
