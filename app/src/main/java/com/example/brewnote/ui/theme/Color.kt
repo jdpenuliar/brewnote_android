@@ -2,7 +2,17 @@ package com.example.brewnote.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Neutral scale — no brand colors per design system
+// Warm coffee-inspired palette
+val Espresso = Color(0xFF432F28)
+val CoffeeBrown = Color(0xFF6F4E37)
+val Cream = Color(0xFFF8F3EB)
+val LightCream = Color(0xFFFDFAF5)
+val Cappuccino = Color(0xFFD1C2B0)
+val Latte = Color(0xFFE8DED1)
+val SecondaryFill = Color(0xFFF0E8DE)
+val Destructive = Color(0xFFC73D33)
+
+// Original Neutral scale for fallback
 val Neutral950 = Color(0xFF0A0A0A)
 val Neutral900 = Color(0xFF171717)
 val Neutral800 = Color(0xFF262626)
