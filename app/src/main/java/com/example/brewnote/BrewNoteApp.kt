@@ -1,7 +1,6 @@
 package com.example.brewnote
 
 import android.app.Application
-import android.util.Log
 import com.clerk.api.Clerk
 import com.example.brewnote.data.ClerkConvexAuthProvider
 import dev.convex.android.ConvexClientWithAuth
@@ -13,7 +12,6 @@ class BrewNoteApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("BrewNoteApp", "onCreate called")
         Clerk.initialize(
             context = this,
             publishableKey = BuildConfig.CLERK_PUBLISHABLE_KEY
@@ -25,6 +23,5 @@ class BrewNoteApp : Application() {
             authProvider = authProvider
         )
         authProvider.bind(convexClient, applicationContext)
-        Log.d("BrewNoteApp", "ConvexClient initialized")
     }
 }

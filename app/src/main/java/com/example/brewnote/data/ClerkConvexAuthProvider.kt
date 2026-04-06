@@ -1,7 +1,6 @@
 package com.example.brewnote.data
 
 import android.content.Context
-import android.util.Log
 import com.clerk.api.Clerk
 import com.clerk.api.session.GetTokenOptions
 import com.clerk.api.network.serialization.ClerkResult
@@ -65,27 +64,22 @@ class ClerkConvexAuthProvider : AuthProvider<String> {
     }
 
     private suspend fun fetchToken(): Result<String> {
-        Log.d("ClerkConvexAuth", "fetchToken called. Initialized: ${Clerk.isInitialized.value}, ActiveSession: ${Clerk.activeSession != null}")
         return when {
             !Clerk.isInitialized.value -> {
-                Log.e("ClerkConvexAuth", "Clerk not initialized")
                 Result.failure(Exception("Clerk not initialized"))
             }
             Clerk.activeSession == null -> {
-                Log.w("ClerkConvexAuth", "No active session")
                 Result.failure(Exception("No active session"))
             }
             else ->
                 when (val result = Clerk.auth.getToken(GetTokenOptions(template = "convex"))) {
                     is ClerkResult.Success -> {
                         val token = result.value
-                        Log.d("ClerkConvexAuth", "Token fetched successfully: ${token.take(10)}...")
                         onIdToken?.invoke(token)
                         Result.success(token)
                     }
                     is ClerkResult.Failure -> {
                         val reason = result.throwable?.message ?: "Token retrieval failed"
-                        Log.e("ClerkConvexAuth", "Token retrieval failed: $reason")
                         Result.failure(Exception(reason))
                     }
                 }
@@ -106,13 +100,10 @@ class ClerkConvexAuthProvider : AuthProvider<String> {
 
     private suspend fun syncSession(oldSession: Session?, newSession: Session?) {
         val convexClient = client?.get() ?: return
-        Log.d("ClerkConvexAuth", "syncSession: old=${oldSession?.status}, new=${newSession?.status}")
 
         if (shouldLogin(oldSession, newSession)) {
-            Log.d("ClerkConvexAuth", "Triggering loginFromCache")
             convexClient.loginFromCache()
         } else if (shouldLogout(oldSession, newSession)) {
-            Log.d("ClerkConvexAuth", "Triggering logout")
             onIdToken?.invoke(null)
             onIdToken = null
             convexClient.logout(applicationContext)

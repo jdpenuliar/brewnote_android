@@ -1,7 +1,6 @@
 package com.example.brewnote.ui.home
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.brewnote.BrewNoteApp
@@ -39,32 +38,28 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun subscribeHomeStats() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("HomeViewModel", "homeStats: starting collect")
             try {
                 convex.subscribe<HomeStats>(
                     name = "home:getHomeStats",
                     args = emptyMap()
                 ).collect { result ->
-                    Log.d("HomeViewModel", "homeStats: in collect")
                     result.fold(
                         onSuccess = {
-                            Log.d("HomeViewModel", "homeStats success: $it")
                             _homeStats.value = it
                         },
-                        onFailure = { e ->
-                            Log.e("HomeViewModel", "homeStats error", e)
+                        onFailure = { _ ->
+                            // ignore
                         }
                     )
                 }
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "homeStats: exception", e)
+                // ignore
             }
         }
     }
 
     private fun subscribeRecentBrews() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("HomeViewModel", "recentBrews: starting collect")
             try {
                 convex.subscribe<PaginationResult<BrewNote>>(
                     name = "brewNotes:getRecentBrewNotes",
@@ -72,25 +67,22 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 ).collect { result ->
                     result.fold(
                         onSuccess = {
-                            Log.d("HomeViewModel", "recentBrews success: ${it.page.size} items")
                             _recentBrews.value = it.page
                             _isLoading.value = false
                         },
-                        onFailure = { e ->
-                            Log.e("HomeViewModel", "recentBrews error", e)
+                        onFailure = { _ ->
                             _isLoading.value = false
                         }
                     )
                 }
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "recentBrews: exception", e)
+                _isLoading.value = false
             }
         }
     }
 
     private fun subscribeRecentBeans() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("HomeViewModel", "recentBeans: starting collect")
             try {
                 convex.subscribe<PaginationResult<Bean>>(
                     name = "beans:getRecentBeans",
@@ -98,16 +90,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 ).collect { result ->
                     result.fold(
                         onSuccess = {
-                            Log.d("HomeViewModel", "recentBeans success: ${it.page.size} items")
                             _recentBeans.value = it.page
                         },
-                        onFailure = { e ->
-                            Log.e("HomeViewModel", "recentBeans error", e)
+                        onFailure = { _ ->
+                            // ignore
                         }
                     )
                 }
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "recentBeans: exception", e)
+                // ignore
             }
         }
     }

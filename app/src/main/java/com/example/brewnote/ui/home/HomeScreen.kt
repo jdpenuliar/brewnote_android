@@ -1,6 +1,5 @@
 package com.example.brewnote.ui.home
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,10 +42,6 @@ fun HomeScreen(
     val recentBrews by viewModel.recentBrews.collectAsState()
     val recentBeans by viewModel.recentBeans.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    Log.d("HomeScreen", "homeStats: $homeStats")
-    Log.d("HomeScreen", "recentBrews: ${recentBrews.size}")
-    Log.d("HomeScreen", "recentBeans: ${recentBeans.size}")
-    Log.d("HomeScreen", "isLoading: $isLoading")
 
     Column(
         modifier = Modifier

@@ -1,7 +1,6 @@
 package com.example.brewnote
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,7 +18,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             BrewnoteTheme {
                 val user by Clerk.userFlow.collectAsStateWithLifecycle()
-                Log.d("MainActivity", "user: ${user}")
                 BrewNoteNavGraph(isAuthenticated = user != null)
             }
         }
