@@ -225,11 +225,17 @@ class BrewsViewModel(application: Application) : AndroidViewModel(application) {
         _formError.value = null
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                // Resolve brew method: if no ID but a name is present, find-or-create via backend
+                val resolvedBrewMethodId = _brewMethodId.value
+                    ?: _brewMethodName.value.takeIf { it.isNotBlank() }?.let { name ->
+                        upsertAndGetBrewMethodId(name)
+                    }
+
                 convex.mutation<Unit>(
                     name = "brewNotes:upsertBrewNote",
                     args = buildMap {
                         id?.let { put("id", it) }
-                        _brewMethodId.value?.let { put("brewMethodId", it) }
+                        resolvedBrewMethodId?.let { put("brewMethodId", it) }
                         if (_selectedBeanIds.value.isNotEmpty()) put("beanIds", _selectedBeanIds.value)
                         if (_selectedEquipmentIds.value.isNotEmpty()) put("equipmentIds", _selectedEquipmentIds.value)
                         _rating.value?.let { put("rating", it) }
